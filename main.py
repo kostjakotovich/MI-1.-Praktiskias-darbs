@@ -1,49 +1,101 @@
+# import random
+
+# start_array_length = input("Lūdzu ievadiet virknes garumu (no 15 līdz 25): ")
+# try:
+#     start_array_length = int(start_array_length)
+# except:
+#     print("Nepareiza ievade, lūdzu, ievadiet veselo skaitli.")
+
+# number_list = []
+# for i in range(0, start_array_length):
+#     number_list.append(random.randint(1, 9))
+
+# def print_list():
+#     for i in range(0, len(number_list)):
+#         print(number_list[i], end=" ")
+
+# print_list()
+
+
 import random
 
-start_array_length = input("Lūdzu ievadiet virknes garumu (no 15 līdz 25): ")
-try:
-    start_array_length = int(start_array_length)
-except:
-    print("Nepareiza ievade, lūdzu, ievadiet veselo skaitli.")
-
-number_list = []
-for i in range(0, start_array_length):
-    number_list.append(random.randint(1, 9))
-
-def print_list():
-    for i in range(0, len(number_list)):
-        print(number_list[i], end=" ")
-
-print_list()
-
-
-# mazliet savādāks variants
-
-import random
-
-
+# --- 1 CILVĒKA DAĻA: IEVADE ---
 while True:
     try:
         user_input = input("Lūdzu, ievadiet virknes garumu (no 15 līdz 25): ")
         array_length = int(user_input)
-        
-        if array_length >= 15 and array_length <= 25:
+        if 15 <= array_length <= 25:
             break 
         else:
             print("Kļūda: Skaitlim jābūt robežās no 15 līdz 25!")
-            
-    except:
-        
+    except ValueError:
         print("Nepareiza ievade! Lūdzu, ievadiet veselu skaitli.")
 
-
-number_list = []
-
-for i in range(0, array_length):
-    
-    new_number = random.randint(1, 9)
-    number_list.append(new_number)
+# Ģenerēšana (Pievienoju šo daļu, lai varētu testēt punktu loģiku)
+number_list = [random.randint(1, 9) for _ in range(array_length)]
+print(f"\nSākuma skaitļu virkne: {number_list}")
 
 
-print("Sākuma skaitļu virkne:")
-print(number_list)
+# --- 3 (Gustavs). CILVĒKA DAĻA: PUNKTU UN GĀJIENU LOĢIKA KĀ KLASE ---
+class Spele:
+    def __init__(self, virkne):
+        self.virkne = virkne
+        self.punkti = {"cilveks": 0, "dators": 0}
+        self.pasreizejais_speletajs = "cilveks"
+
+    def aprekinat_punktus(self, summa):
+
+        if self.pasreizejais_speletajs == "cilveks":
+            pretinieks = "dators"
+        else:
+            pretinieks = "cilveks"
+        
+        if summa > 7:
+            self.punkti[self.pasreizejais_speletajs] += 1
+        elif summa < 7:
+            self.punkti[pretinieks] -= 1
+        else:
+            self.punkti["cilveks"] += 1
+            self.punkti["dators"] += 1
+        
+        self.radit_punktus()
+
+    def mainit_gajienu(self):
+        if self.pasreizejais_speletajs == "cilveks":
+            self.pasreizejais_speletajs = "dators"
+        else:
+            self.pasreizejais_speletajs = "cilveks"
+        print(f"--- Tagad gājienu veic: {self.pasreizejais_speletajs} ---")
+
+    def radit_punktus(self):
+        print(f"REZULTĀTS: Cilvēks {self.punkti['cilveks']} | Dators {self.punkti['dators']}")
+
+
+game = Spele(number_list)
+
+
+
+# --- TESTA BLOKS ---
+print("\n--- TESTA SĀKUMS ---")
+game.aprekinat_punktus(10) # Cilvēks saņem 1
+game.mainit_gajienu()
+game.aprekinat_punktus(4)  # Cilvēks zaudē 1 (jo dators gāja un summa < 7)
+
+
+# Apraksts:
+
+# Izveidoju klasi - "Spele" datu strukturētai glabāšanai ( jo bija obigāta prasība).
+
+# Uzstaisīju punktu skaitīšanas loģiku:
+
+# Summa > 7: spēlētājam +1 punkts.
+
+# Summa < 7: pretiniekam -1 punkts.
+
+# Summa = 7: abiem spēlētājiem +1 punkts.
+
+# Izstrādju funkciju mainit_gajienu().
+
+# Pievienoju radit_punktus().
+
+# Loretas kodā pievienoju testa bloku pārbaudei.
