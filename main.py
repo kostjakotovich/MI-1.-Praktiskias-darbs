@@ -122,5 +122,28 @@ class SpelesKoks:
         else:
             self.loku_kopa[sakuma_virsotnes_id] = [beigu_virsotnes_id]
 
+koks = SpelesKoks()
+
 root = Virsotne(0, number_list, {"cilveks": 0, "dators": 0}, 0)
-SpelesKoks.pievienot_virsotni(root)
+koks.pievienot_virsotni(root)
+
+# Bloku apakšā var izmantot kad veidosies spēles gājieni. Virsotņu pievienošanai, visu pēcteču ģenerēšana
+
+def pectecu_generesana():
+    for i in range(len(virkne)-1):
+        id += 1
+        jauna_virkne = virkne[:]
+        jaunie_punkti = punkti.copy
+        sk_summa = virkne[i]+virkne[i+1]
+
+        if sk_summa > 7:
+            jauna_virkne[i] = 1
+        elif sk_summa < 7:
+            jauna_virkne[i] = 3
+        else:
+            jauna_virkne[i] = 2
+
+        jauna_virkne.pop(i+1)
+
+        child = Virsotne(id, jauna_virkne, jaunie_punkti, gajienu_skaits+1)
+        koks.pievienot_virsotni(child)
