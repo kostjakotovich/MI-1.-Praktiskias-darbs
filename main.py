@@ -105,7 +105,7 @@ class Virsotne:
     def __init__(self, id, virkne, punkti, limenis):
         self.id = id
         self.virkne = virkne[:]
-        self.punkti = punkti.copy
+        self.punkti = punkti.copy()
         self.limenis = limenis
 
 class SpelesKoks:
@@ -128,22 +128,37 @@ root = Virsotne(0, number_list, {"cilveks": 0, "dators": 0}, 0)
 koks.pievienot_virsotni(root)
 
 # Bloku apakšā var izmantot kad veidosies spēles gājieni. Virsotņu pievienošanai, visu pēcteču ģenerēšana
+def pectecu_generesana(id, virkne, punkti, limenis):
+    vecaku_id = id
+    if limenis % 2 == 0:
+        pasreizejais_speletajs = "cilveks"
+        pretinieks = "dators"
+    else:
+        pasreizejais_speletajs = "dators"
+        pretinieks = "cilveks"
 
-def pectecu_generesana():
     for i in range(len(virkne)-1):
         id += 1
+        berna_id = id
         jauna_virkne = virkne[:]
-        jaunie_punkti = punkti.copy
-        sk_summa = virkne[i]+virkne[i+1]
+        jaunie_punkti = punkti.copy()
+        sk_summa = jauna_virkne[i]+jauna_virkne[i+1]
 
         if sk_summa > 7:
             jauna_virkne[i] = 1
+            jaunie_punkti[pasreizejais_speletajs] += 1
         elif sk_summa < 7:
             jauna_virkne[i] = 3
+            jaunie_punkti[pretinieks] -= 1
         else:
             jauna_virkne[i] = 2
+            jaunie_punkti["cilveks"] += 1
+            jaunie_punkti["dators"] += 1
 
         jauna_virkne.pop(i+1)
 
-        child = Virsotne(id, jauna_virkne, jaunie_punkti, gajienu_skaits+1)
+        child = Virsotne(berna_id, jauna_virkne, jaunie_punkti, limenis+1)
+
         koks.pievienot_virsotni(child)
+        koks.pievienot_loku(vecaku_id, berna_id)
+    return id
