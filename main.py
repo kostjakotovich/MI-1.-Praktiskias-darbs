@@ -99,3 +99,28 @@ game.aprekinat_punktus(4)  # Cilvēks zaudē 1 (jo dators gāja un summa < 7)
 # Pievienoju radit_punktus().
 
 # Loretas kodā pievienoju testa bloku pārbaudei.
+
+# --- (K.Kotovičs). SPĒLES KOKS
+class Virsotne:
+    def __init__(self, id, virkne, punkti, limenis):
+        self.id = id
+        self.virkne = virkne[:]
+        self.punkti = punkti.copy
+        self.limenis = limenis
+
+class SpelesKoks:
+    def __init__(self):
+        self.virsotnu_kopa = []
+        self.loku_kopa = dict()
+
+    def pievienot_virsotni(self, Virsotne):
+        self.virsotnu_kopa.append(Virsotne)
+
+    def pievienot_loku(self, sakuma_virsotnes_id, beigu_virsotnes_id):
+        if sakuma_virsotnes_id in self.loku_kopa:
+            self.loku_kopa[sakuma_virsotnes_id].append(beigu_virsotnes_id)
+        else:
+            self.loku_kopa[sakuma_virsotnes_id] = [beigu_virsotnes_id]
+
+root = Virsotne(0, number_list, {"cilveks": 0, "dators": 0}, 0)
+SpelesKoks.pievienot_virsotni(root)
