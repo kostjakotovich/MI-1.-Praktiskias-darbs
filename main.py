@@ -1,5 +1,4 @@
 
-
 import random
 
 # --- 1 CILVĒKA DAĻA: IEVADE ---
