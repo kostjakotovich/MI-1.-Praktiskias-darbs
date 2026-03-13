@@ -29,6 +29,40 @@ while True:
 number_list = [random.randint(1, 9) for _ in range(array_length)]
 print(f"\nSākuma skaitļu virkne: {number_list}")
 
+# --- 2 Spēles mehānikas realizācija --
+
+def pick_number(number_list):
+    while len(number_list) > 1:
+        while True:
+            try:
+                index = int(input("Izvēleties skaitļa numuru:"))
+                if 1 <= index < len(number_list):
+                    kreisais_skaitlis = number_list[index-1]
+                    labais_skaitlis = number_list[index]
+
+                    skaitla_summa = kreisais_skaitlis + labais_skaitlis
+
+                    if skaitla_summa > 7:
+                        jauns_skaitlis = 1
+                    elif skaitla_summa < 7:
+                        jauns_skaitlis = 3
+                    else:
+                        jauns_skaitlis = 2
+
+                    number_list.pop(index)
+                    number_list.pop(index-1)
+
+                    number_list.insert(index - 1, jauns_skaitlis)
+                    print (f"You choose numbers: {kreisais_skaitlis} and {labais_skaitlis}, summary - {skaitla_summa}")
+
+                    print("Jauns saraksts:", number_list)
+
+                    break
+
+                else:
+                    print("Kļūda")
+            except ValueError:
+                print("Nepreizs inputs")
 
 # --- 3 (Gustavs). CILVĒKA DAĻA: PUNKTU UN GĀJIENU LOĢIKA KĀ KLASE ---
 class Spele:
