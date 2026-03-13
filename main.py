@@ -3,6 +3,18 @@ import random
 
 # --- 1 CILVĒKA DAĻA: IEVADE ---
 while True:
+    izvele = input("Kurš uzsāks spēli? (1 - Cilvēks, 2 - Dators): ")
+    if izvele == '1':
+        sakuma_speletajs = "cilveks"
+        break
+    elif izvele == '2':
+        sakuma_speletajs = "dators"
+        break
+    else:
+        print("Kļūda: Lūdzu, ievadiet 1 vai 2!")
+
+
+while True:
     try:
         user_input = input("Lūdzu, ievadiet virknes garumu (no 15 līdz 25): ")
         array_length = int(user_input)
@@ -21,10 +33,10 @@ print(f"\nSākuma skaitļu virkne: {number_list}")
 # --- 3 (Gustavs). CILVĒKA DAĻA: PUNKTU UN GĀJIENU LOĢIKA KĀ KLASE ---
 class Spele:
 
-    def __init__(self, virkne):
+    def __init__(self, virkne, sakuma_speletajs):
         self.virkne = virkne
         self.punkti = {"cilveks": 0, "dators": 0}
-        self.pasreizejais_speletajs = "cilveks"
+        self.pasreizejais_speletajs = sakuma_speletajs
 
     def aprekinat_punktus(self, summa):
         if self.pasreizejais_speletajs == "cilveks":
