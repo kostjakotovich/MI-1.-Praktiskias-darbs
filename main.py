@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
     QLabel, QPushButton, QLineEdit, QMessageBox
 )
 from PyQt6.QtCore import QTimer
+import time
 
 class Virsotne:
     def __init__(self, id, virkne, punkti, limenis, gajiens=None):
@@ -101,6 +102,27 @@ def dabut_bernus_no_koka(koks, virsotne_id):
             berni.append(child)
     return berni
 
+def notirit_vertibas_apakskoka(koks, virsotne_id):
+    virsotne = atrast_virsotni(koks, virsotne_id)
+    if virsotne is None:
+        return
+
+    virsotne.vertiba = None
+    for child_id in koks.loku_kopa.get(virsotne_id, []):
+        notirit_vertibas_apakskoka(koks, child_id)
+
+
+def saskaitit_novertetas_virsotnes(koks, virsotne_id):
+    virsotne = atrast_virsotni(koks, virsotne_id)
+    if virsotne is None:
+        return 0
+
+    skaits = 1 if virsotne.vertiba is not None else 0
+    for child_id in koks.loku_kopa.get(virsotne_id, []):
+        skaits += saskaitit_novertetas_virsotnes(koks, child_id)
+
+    return skaits
+
 def minimax_pa_koku(koks, virsotne_id, max_limenis, saknes_speletajs):
     virsotne = atrast_virsotni(koks, virsotne_id)
 
@@ -191,10 +213,10 @@ def alpha_beta_pa_koku(koks, virsotne_id, max_limenis, saknes_speletajs, alpha, 
         virsotne.vertiba = vertiba
         return vertiba
 
-def dabut_labako_gajienu_minimax(koks, saknes_speletajs, max_limenis):
-    minimax_pa_koku(koks, 0, max_limenis, saknes_speletajs)
+def dabut_labako_gajienu_minimax(koks, saknes_id, saknes_speletajs, max_limenis):
+    minimax_pa_koku(koks, saknes_id, max_limenis, saknes_speletajs)
 
-    saknes_berni = koks.loku_kopa.get(0, [])
+    saknes_berni = koks.loku_kopa.get(saknes_id, [])
     if not saknes_berni:
         return None
 
@@ -203,6 +225,9 @@ def dabut_labako_gajienu_minimax(koks, saknes_speletajs, max_limenis):
 
     for child_id in saknes_berni[1:]:
         child = atrast_virsotni(koks, child_id)
+
+        if child is None or child.vertiba is None:
+            continue
 
         if saknes_speletajs == "dators":
             if child.vertiba > labaka_vertiba:
@@ -215,10 +240,10 @@ def dabut_labako_gajienu_minimax(koks, saknes_speletajs, max_limenis):
 
     return atrast_virsotni(koks, labakais_id).gajiens
 
-def dabut_labako_gajienu_alpha_beta(koks, saknes_speletajs, max_limenis):
-    alpha_beta_pa_koku(koks, 0, max_limenis, saknes_speletajs, float("-inf"), float("inf"))
+def dabut_labako_gajienu_alpha_beta(koks, saknes_id, saknes_speletajs, max_limenis):
+    alpha_beta_pa_koku(koks, saknes_id, max_limenis, saknes_speletajs, float("-inf"), float("inf"))
 
-    saknes_berni = koks.loku_kopa.get(0, [])
+    saknes_berni = koks.loku_kopa.get(saknes_id, [])
     if not saknes_berni:
         return None
 
@@ -259,6 +284,14 @@ class SpeleGUI(QMainWindow):
 
         self.sakuma_speletajs = None
         self.algoritms = None # pievienots prieks algoritma izvelei
+
+        self.max_limenis = 3
+        self.koks = None
+        self.tekosa_virsotne = None
+
+        self.kopa_generetas_virsotnes = 0
+        self.kopa_novertetas_virsotnes = 0
+        self.datora_gajienu_laiki = []
 
         self.show_start()
 
@@ -335,7 +368,6 @@ class SpeleGUI(QMainWindow):
             self.btn_minimax.setStyleSheet("")
 
     def start_game(self):
-
         if not self.sakuma_speletajs:
             self.error.setText("Izveleties kurs sak!")
             return
@@ -352,9 +384,17 @@ class SpeleGUI(QMainWindow):
             self.error.setText("Ievadiet skaitli 15-25")
             return
 
+        self.error.setText("")
+
         self.virkne = [random.randint(1, 9) for _ in range(garums)]
         self.punkti = {"cilveks": 0, "dators": 0}
         self.speletajs = self.sakuma_speletajs
+
+        self.kopa_generetas_virsotnes = 0
+        self.kopa_novertetas_virsotnes = 0
+        self.datora_gajienu_laiki = []
+
+        self.uzbuvet_jaunu_apakskoku()
 
         self.show_game()
 
@@ -365,24 +405,35 @@ class SpeleGUI(QMainWindow):
         if self.speletajs != "dators" or len(self.virkne) <= 1:
             return
 
-        self.koks = SpelesKoks()
-        self.root = Virsotne(0, self.virkne, self.punkti, 0)
-        self.koks.pievienot_virsotni(self.root)
+        if self.koks is None or self.tekosa_virsotne is None:
+            self.uzbuvet_jaunu_apakskoku()
 
-        visu_apakskoku_generesana(
-            self.koks,
-            0,
-            self.virkne,
-            self.punkti,
-            0,
-            self.speletajs,
-            3
-        )
+        start_time = time.perf_counter()
+
+        notirit_vertibas_apakskoka(self.koks, self.tekosa_virsotne.id)
 
         if self.algoritms == "minimax":
-            gajiens = dabut_labako_gajienu_minimax(self.koks, self.speletajs, 3)
+            gajiens = dabut_labako_gajienu_minimax(
+                self.koks,
+                self.tekosa_virsotne.id,
+                self.speletajs,
+                self.max_limenis
+            )
         else:
-            gajiens = dabut_labako_gajienu_alpha_beta(self.koks, self.speletajs, 3)
+            gajiens = dabut_labako_gajienu_alpha_beta(
+                self.koks,
+                self.tekosa_virsotne.id,
+                self.speletajs,
+                self.max_limenis
+            )
+
+        self.kopa_novertetas_virsotnes += saskaitit_novertetas_virsotnes(
+            self.koks,
+            self.tekosa_virsotne.id
+        )
+
+        elapsed = time.perf_counter() - start_time
+        self.datora_gajienu_laiki.append(elapsed)
 
         if gajiens is not None:
             self.move(gajiens)
@@ -432,7 +483,7 @@ class SpeleGUI(QMainWindow):
 
     def move(self, i):
         a = self.virkne[i]
-        b = self.virkne[i+1]
+        b = self.virkne[i + 1]
         summa = a + b
 
         pretinieks = nakamais_speletajs(self.speletajs)
@@ -448,9 +499,11 @@ class SpeleGUI(QMainWindow):
             self.punkti["cilveks"] += 1
             self.punkti["dators"] += 1
 
-        self.virkne.pop(i+1)
+        self.virkne.pop(i + 1)
         self.virkne.pop(i)
         self.virkne.insert(i, jauns)
+
+        self.pariet_uz_bernu(i)
 
         self.speletajs = nakamais_speletajs(self.speletajs)
 
@@ -459,13 +512,49 @@ class SpeleGUI(QMainWindow):
             self.end_game()
             return
 
+        if self.tekosa_virsotne is None or self.tekosa_virsotne.limenis == self.max_limenis:
+            self.uzbuvet_jaunu_apakskoku()
+
         self.update_ui()
 
         if self.speletajs == "dators":
             QTimer.singleShot(300, self.datora_gajiens)
 
-    def end_game(self):
+    def uzbuvet_jaunu_apakskoku(self):
+        self.koks = SpelesKoks()
+        self.root = Virsotne(0, self.virkne, self.punkti, 0)
+        self.koks.pievienot_virsotni(self.root)
 
+        visu_apakskoku_generesana(
+            self.koks,
+            0,
+            self.virkne,
+            self.punkti,
+            0,
+            self.speletajs,
+            self.max_limenis
+        )
+
+        self.tekosa_virsotne = self.root
+        self.kopa_generetas_virsotnes += len(self.koks.virsotnu_kopa)
+
+    def pariet_uz_bernu(self, gajiens):
+        if self.koks is None or self.tekosa_virsotne is None:
+            self.tekosa_virsotne = None
+            return
+
+        jaunais = None
+
+        for child_id in self.koks.loku_kopa.get(self.tekosa_virsotne.id, []):
+            child = atrast_virsotni(self.koks, child_id)
+            if child is not None and child.gajiens == gajiens:
+                if child.virkne == self.virkne and child.punkti == self.punkti:
+                    jaunais = child
+                    break
+
+        self.tekosa_virsotne = jaunais
+
+    def end_game(self):
         c = self.punkti["cilveks"]
         d = self.punkti["dators"]
 
@@ -476,7 +565,27 @@ class SpeleGUI(QMainWindow):
         else:
             msg = "Neizskirts"
 
-        QMessageBox.information(self, "Beigas", msg)
+        if self.datora_gajienu_laiki:
+            videjais_laiks = sum(self.datora_gajienu_laiki) / len(self.datora_gajienu_laiki)
+        else:
+            videjais_laiks = 0
+
+        print("----- SPELES STATISTIKA -----")
+        print(f"Algoritms: {self.algoritms}")
+        print(f"Sakuma speletajs: {self.sakuma_speletajs}")
+        print(f"Uzvaretajs: {msg}")
+        print(f"Genereto virsotnu skaits: {self.kopa_generetas_virsotnes}")
+        print(f"Noverteto virsotnu skaits: {self.kopa_novertetas_virsotnes}")
+        print(f"Videjais datora gajiena laiks: {videjais_laiks:.6f} s")
+        print("----------------------------")
+
+        stats = (
+            f"\n\nĢenerēto virsotņu skaits: {self.kopa_generetas_virsotnes}"
+            f"\nNovērtēto virsotņu skaits: {self.kopa_novertetas_virsotnes}"
+            f"\nVidējais datora gājiena laiks: {videjais_laiks:.6f} s"
+        )
+
+        QMessageBox.information(self, "Beigas", msg + stats)
 
 if __name__ == "__main__":
 
