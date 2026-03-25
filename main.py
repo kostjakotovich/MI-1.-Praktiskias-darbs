@@ -1,4 +1,3 @@
-
 import random
 import sys
 from PyQt6.QtWidgets import (
@@ -8,122 +7,14 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import QTimer
 
-# --- 1 CILVĒKA DAĻA: IEVADE --- 
-# Tika ielikta iekš GUI
-if False:
-    while True:
-        izvele = input("Kurš uzsāks spēli? (1 - Cilvēks, 2 - Dators): ")
-        if izvele == '1':
-            sakuma_speletajs = "cilveks"
-            break
-        elif izvele == '2':
-            sakuma_speletajs = "dators"
-            break
-        else:
-            print("Kļūda: Lūdzu, ievadiet 1 vai 2!")
-
-
-    while True:
-        try:
-            user_input = input("Lūdzu, ievadiet virknes garumu (no 15 līdz 25): ")
-            array_length = int(user_input)
-            if 15 <= array_length <= 25:
-                break 
-            else:
-                print("Kļūda: Skaitlim jābūt robežās no 15 līdz 25!")
-        except ValueError:
-            print("Nepareiza ievade! Lūdzu, ievadiet veselu skaitli.")
-
-    # Ģenerēšana (Pievienoju šo daļu, lai varētu testēt punktu loģiku)
-    number_list = [random.randint(1, 9) for _ in range(array_length)]
-    print(f"\nSākuma skaitļu virkne: {number_list}")
-
-# --- 2 Spēles mehānikas realizācija --
-
-def pick_number(number_list):
-    while len(number_list) > 1:
-        while True:
-            try:
-                index = int(input("Izvēleties skaitļa numuru:"))
-                if 1 <= index < len(number_list):
-                    kreisais_skaitlis = number_list[index-1]
-                    labais_skaitlis = number_list[index]
-
-                    skaitla_summa = kreisais_skaitlis + labais_skaitlis
-
-                    if skaitla_summa > 7:
-                        jauns_skaitlis = 1
-                    elif skaitla_summa < 7:
-                        jauns_skaitlis = 3
-                    else:
-                        jauns_skaitlis = 2
-
-                    number_list.pop(index)
-                    number_list.pop(index-1)
-
-                    number_list.insert(index - 1, jauns_skaitlis)
-                    print (f"You choose numbers: {kreisais_skaitlis} and {labais_skaitlis}, summary - {skaitla_summa}")
-
-                    print("Jauns saraksts:", number_list)
-
-                    break
-
-                else:
-                    print("Kļūda")
-            except ValueError:
-                print("Nepreizs inputs")
-
-# --- 3 (Gustavs). CILVĒKA DAĻA: PUNKTU UN GĀJIENU LOĢIKA KĀ KLASE ---
-class Spele:
-
-    def __init__(self, virkne, sakuma_speletajs):
-        self.virkne = virkne
-        self.punkti = {"cilveks": 0, "dators": 0}
-        self.pasreizejais_speletajs = sakuma_speletajs
-
-    def aprekinat_punktus(self, summa):
-        if self.pasreizejais_speletajs == "cilveks":
-            pretinieks = "dators"
-        else:
-            pretinieks = "cilveks"
-        if summa > 7:
-            self.punkti[self.pasreizejais_speletajs] += 1
-        elif summa < 7:
-            self.punkti[pretinieks] -= 1
-        else:
-            self.punkti["cilveks"] += 1
-            self.punkti["dators"] += 1
-
-
-    def mainit_gajienu(self):
-        if self.pasreizejais_speletajs == "cilveks":
-            self.pasreizejais_speletajs = "dators"
-        else:
-            self.pasreizejais_speletajs = "cilveks"
-
-
-    def radit_punktus(self):
-        print(f"REZULTĀTS: Cilvēks {self.punkti['cilveks']} | Dators {self.punkti['dators']}")
-
-    # Galvenā funkcija ko var izmantot pārējie
-    def izpildit_gajienu(self, summa):
-        print(f"\nGājienu veic: {self.pasreizejais_speletajs}")
-        print(f"Pāra summa: {summa}")
-        self.aprekinat_punktus(summa)
-        self.radit_punktus()
-        self.mainit_gajienu()
-        print(f"--- Tagad gājienu veic: {self.pasreizejais_speletajs} ---")
-
-
-
-# --- (K.Kotovičs). SPĒLES KOKS
 class Virsotne:
-    def __init__(self, id, virkne, punkti, limenis):
+    def __init__(self, id, virkne, punkti, limenis, gajiens=None):
         self.id = id
         self.virkne = virkne[:]
         self.punkti = punkti.copy()
         self.limenis = limenis
         self.vertiba = None
+        self.gajiens = gajiens
 
 class SpelesKoks:
     def __init__(self):
@@ -150,32 +41,6 @@ def heiristiska_funkcija(virkne, punkti):
         bonuss = 1
 
     return starpiba + bonuss
-
-def generet_bernus(virkne, punkti, pasreizejais_speletajs):
-    berni = []
-    pretinieks = nakamais_speletajs(pasreizejais_speletajs)
-
-    for i in range(len(virkne) - 1):
-        jauna_virkne = virkne[:]
-        jaunie_punkti = punkti.copy()
-        sk_summa = jauna_virkne[i] + jauna_virkne[i + 1]
-
-        if sk_summa > 7:
-            jauna_virkne[i] = 1
-            jaunie_punkti[pasreizejais_speletajs] += 1
-        elif sk_summa < 7:
-            jauna_virkne[i] = 3
-            jaunie_punkti[pretinieks] -= 1
-        else:
-            jauna_virkne[i] = 2
-            jaunie_punkti["cilveks"] += 1
-            jaunie_punkti["dators"] += 1
-
-        jauna_virkne.pop(i + 1)
-
-        berni.append((i, jauna_virkne, jaunie_punkti))
-
-    return berni
 
 def visu_apakskoku_generesana(koks, id, virkne, punkti, limenis, pasreizejais_speletajs, max_limenis):
     vecaku_id = id
@@ -206,7 +71,7 @@ def visu_apakskoku_generesana(koks, id, virkne, punkti, limenis, pasreizejais_sp
 
         jauna_virkne.pop(i + 1)
 
-        child = Virsotne(berna_id, jauna_virkne, jaunie_punkti, limenis + 1)
+        child = Virsotne(berna_id, jauna_virkne, jaunie_punkti, limenis + 1, i)
         koks.pievienot_virsotni(child)
         koks.pievienot_loku(vecaku_id, berna_id)
 
@@ -228,6 +93,13 @@ def atrast_virsotni(koks, virsotnes_id):
             return v
     return None
 
+def dabut_bernus_no_koka(koks, virsotne_id):
+    berni = []
+    for child_id in koks.loku_kopa.get(virsotne_id, []):
+        child = atrast_virsotni(koks, child_id)
+        if child is not None:
+            berni.append(child)
+    return berni
 
 def minimax_pa_koku(koks, virsotne_id, max_limenis, saknes_speletajs):
     virsotne = atrast_virsotni(koks, virsotne_id)
@@ -256,8 +128,70 @@ def minimax_pa_koku(koks, virsotne_id, max_limenis, saknes_speletajs):
 
     return virsotne.vertiba
 
+def alpha_beta_pa_koku(koks, virsotne_id, max_limenis, saknes_speletajs, alpha, beta):
+    virsotne = atrast_virsotni(koks, virsotne_id)
 
-def dabut_labako_gajienu_no_koka(koks, saknes_speletajs, max_limenis):
+    if virsotne is None:
+        return None
+
+    if virsotne.limenis == max_limenis or len(virsotne.virkne) == 1 or virsotne_id not in koks.loku_kopa:
+        virsotne.vertiba = heiristiska_funkcija(virsotne.virkne, virsotne.punkti)
+        return virsotne.vertiba
+
+    if saknes_speletajs == "dators":
+        ir_max = (virsotne.limenis % 2 == 0)
+    else:
+        ir_max = (virsotne.limenis % 2 == 1)
+
+    berni = dabut_bernus_no_koka(koks, virsotne_id)
+
+    if ir_max:
+        vertiba = float("-inf")
+
+        for berns in berni:
+            berns_vertiba = alpha_beta_pa_koku(
+                koks,
+                berns.id,
+                max_limenis,
+                saknes_speletajs,
+                alpha,
+                beta
+            )
+
+            if berns_vertiba > vertiba:
+                vertiba = berns_vertiba
+
+            alpha = max(alpha, vertiba)
+            if beta <= alpha:
+                break
+
+        virsotne.vertiba = vertiba
+        return vertiba
+
+    else:
+        vertiba = float("inf")
+
+        for berns in berni:
+            berns_vertiba = alpha_beta_pa_koku(
+                koks,
+                berns.id,
+                max_limenis,
+                saknes_speletajs,
+                alpha,
+                beta
+            )
+
+            if berns_vertiba < vertiba:
+                vertiba = berns_vertiba
+
+            beta = min(beta, vertiba)
+            if beta <= alpha:
+                break
+
+        virsotne.vertiba = vertiba
+        return vertiba
+
+def dabut_labako_gajienu_minimax(koks, saknes_speletajs, max_limenis):
     minimax_pa_koku(koks, 0, max_limenis, saknes_speletajs)
 
     saknes_berni = koks.loku_kopa.get(0, [])
@@ -269,6 +203,7 @@ def dabut_labako_gajienu_no_koka(koks, saknes_speletajs, max_limenis):
 
     for child_id in saknes_berni[1:]:
         child = atrast_virsotni(koks, child_id)
+
         if saknes_speletajs == "dators":
             if child.vertiba > labaka_vertiba:
                 labaka_vertiba = child.vertiba
@@ -278,73 +213,42 @@ def dabut_labako_gajienu_no_koka(koks, saknes_speletajs, max_limenis):
                 labaka_vertiba = child.vertiba
                 labakais_id = child_id
 
-    sakne = atrast_virsotni(koks, 0)
-    saknes_berns = atrast_virsotni(koks, labakais_id)
+    return atrast_virsotni(koks, labakais_id).gajiens
 
-    berni = generet_bernus(sakne.virkne, sakne.punkti, saknes_speletajs)
-    for gajiens, b_virkne, b_punkti in berni:
-        if b_virkne == saknes_berns.virkne and b_punkti == saknes_berns.punkti:
-            return gajiens
+def dabut_labako_gajienu_alpha_beta(koks, saknes_speletajs, max_limenis):
+    alpha_beta_pa_koku(koks, 0, max_limenis, saknes_speletajs, float("-inf"), float("inf"))
 
-    return None
+    saknes_berni = koks.loku_kopa.get(0, [])
+    if not saknes_berni:
+        return None
 
-def alpha_beta(virkne, punkti, speletajs, dzilums, max_dzilums, alpha, beta):
-    if len(virkne) == 1 or dzilums == max_dzilums:
-        return heiristiska_funkcija(virkne, punkti), None
+    labakais_id = None
+    labaka_vertiba = None
 
-    berni = generet_bernus(virkne, punkti, speletajs)
+    for child_id in saknes_berni:
+        child = atrast_virsotni(koks, child_id)
 
-    if speletajs == "dators":
-        vertiba = float("-inf")
-        labakais_gajiens = None
+        if child is None or child.vertiba is None:
+            continue
 
-        for gajiens, b_virkne, b_punkti in berni:
-            b_vertiba, _ = alpha_beta(
-                b_virkne,
-                b_punkti,
-                nakamais_speletajs(speletajs),
-                dzilums + 1,
-                max_dzilums,
-                alpha,
-                beta
-            )
+        if labakais_id is None:
+            labakais_id = child_id
+            labaka_vertiba = child.vertiba
+            continue
 
-            if b_vertiba > vertiba:
-                vertiba = b_vertiba
-                labakais_gajiens = gajiens
+        if saknes_speletajs == "dators":
+            if child.vertiba > labaka_vertiba:
+                labaka_vertiba = child.vertiba
+                labakais_id = child_id
+        else:
+            if child.vertiba < labaka_vertiba:
+                labaka_vertiba = child.vertiba
+                labakais_id = child_id
 
-            alpha = max(alpha, vertiba)
-            if beta <= alpha:
-                break
+    if labakais_id is None:
+        return None
 
-        return vertiba, labakais_gajiens
-
-    else:
-        vertiba = float("inf")
-        labakais_gajiens = None
-
-        for gajiens, b_virkne, b_punkti in berni:
-            b_vertiba, _ = alpha_beta(
-                b_virkne,
-                b_punkti,
-                nakamais_speletajs(speletajs),
-                dzilums + 1,
-                max_dzilums,
-                alpha,
-                beta
-            )
-
-            if b_vertiba < vertiba:
-                vertiba = b_vertiba
-                labakais_gajiens = gajiens
-
-            beta = min(beta, vertiba)
-            if beta <= alpha:
-                break
-
-        return vertiba, labakais_gajiens
-
-# --- Kristiāns Neško GUI
+    return atrast_virsotni(koks, labakais_id).gajiens
 
 class SpeleGUI(QMainWindow):
 
@@ -354,7 +258,6 @@ class SpeleGUI(QMainWindow):
         self.setMinimumSize(600, 400)
 
         self.sakuma_speletajs = None
-        self.number_list = []
         self.algoritms = None # pievienots prieks algoritma izvelei
 
         self.show_start()
@@ -401,7 +304,7 @@ class SpeleGUI(QMainWindow):
 
         layout.addLayout(alg_row)
 
-        start = QPushButton("Sakt spele")
+        start = QPushButton("Sakt speli")
         start.clicked.connect(self.start_game)
         layout.addWidget(start)
 
@@ -462,33 +365,24 @@ class SpeleGUI(QMainWindow):
         if self.speletajs != "dators" or len(self.virkne) <= 1:
             return
 
+        self.koks = SpelesKoks()
+        self.root = Virsotne(0, self.virkne, self.punkti, 0)
+        self.koks.pievienot_virsotni(self.root)
+
+        visu_apakskoku_generesana(
+            self.koks,
+            0,
+            self.virkne,
+            self.punkti,
+            0,
+            self.speletajs,
+            3
+        )
+
         if self.algoritms == "minimax":
-            self.koks = SpelesKoks()
-            self.root = Virsotne(0, self.virkne, self.punkti, 0)
-            self.koks.pievienot_virsotni(self.root)
-
-            visu_apakskoku_generesana(
-                self.koks,
-                0,
-                self.virkne,
-                self.punkti,
-                0,
-                self.speletajs,
-                3
-            )
-
-            gajiens = dabut_labako_gajienu_no_koka(self.koks, self.speletajs, 3)
-
+            gajiens = dabut_labako_gajienu_minimax(self.koks, self.speletajs, 3)
         else:
-            _, gajiens = alpha_beta(
-                self.virkne,
-                self.punkti,
-                self.speletajs,
-                0,
-                3,
-                float("-inf"),
-                float("inf")
-            )
+            gajiens = dabut_labako_gajienu_alpha_beta(self.koks, self.speletajs, 3)
 
         if gajiens is not None:
             self.move(gajiens)
